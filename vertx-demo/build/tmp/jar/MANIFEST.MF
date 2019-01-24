@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Main-Verticle: com.vertx.demo.verticle.TodoVerticle
+Main-Class: io.vertx.core.Launcher
+
