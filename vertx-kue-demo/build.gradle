@@ -78,7 +78,7 @@ project("kue-http") {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
         manifest {
             attributes 'Main-Class': 'io.vertx.core.Launcher'
-            attributes 'Main-Verticle': 'io.vertx.blueprint.kue.http.KueHttpVerticle'
+            attributes 'Main-Verticle': 'com.vertx.http.KueHttpVerticle'
         }
     }
 }
