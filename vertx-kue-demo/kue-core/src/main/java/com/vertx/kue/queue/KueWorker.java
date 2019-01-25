@@ -29,7 +29,7 @@ public class KueWorker extends AbstractVerticle {
     private final Kue kue;
 
     /**
-     *  Every worker use different clients.
+     * Every worker use different clients.
      */
     private RedisClient client;
 
