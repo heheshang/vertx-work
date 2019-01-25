@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.redis.RedisClient;
 import io.vertx.redis.RedisOptions;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * @version v1.0
  * @date 2019-01-24-上午 11:43
  */
+@Slf4j
 public class RedisTodoService implements TodoService {
 
 
@@ -81,9 +83,11 @@ public class RedisTodoService implements TodoService {
     @Override
     public Future<Optional<Todo>> getCertain(String todoID) {
 
+        log.info("根据ID 【{}】查询redis缓存", todoID);
         Future<Optional<Todo>> result = Future.future();
         this.redis.hget(Constants.REDIS_TODO_KEY, todoID, res -> {
             if (res.succeeded()) {
+                log.info("根据ID 【{}】查询redis缓存结果为【{}】", todoID, res.result());
                 Optional<Todo> todo = Optional.of(Json.decodeValue(res.result(), Todo.class));
                 result.complete(todo);
             } else {

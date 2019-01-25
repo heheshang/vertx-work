@@ -7,14 +7,21 @@ import io.vertx.core.json.JsonObject;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ *
+ * Todo.class 实体对象由序号id、标题title、次序order、地址url以及代表待办事项是否完成的一个标识complete组成。
+ * 我们可以把它看作是一个简单的Java Bean。它可以被编码成JSON格式的数据，我们在后边会大量使用JSON（事实上，在Vert.x中JSON非常普遍）。
+ * 同时注意到我们给Todo类加上了一个注解：@DataObject，这是用于生成JSON转换类的注解。
+ *
+ * @DataObject 注解被 @DataObject 注解的实体类需要满足以下条件：拥有一个拷贝构造函数以及一个接受一个 JsonObject 对象的构造函数。
+ *
  * @author ssk www.8win.com Inc.All rights reserved
  * @version v1.0
  * @date 2019-01-24-上午 10:07
  */
 @DataObject(generateConverter = true)
 public class Todo {
-
-    private static final AtomicInteger acc = new AtomicInteger(0); // counter
+    // counter
+    private static final AtomicInteger acc = new AtomicInteger(0);
 
     private int id;
 

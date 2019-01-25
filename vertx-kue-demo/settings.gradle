@@ -1,0 +1,6 @@
+rootProject.name = 'vertx-kue-demo'
+
+include "kue-core"
+include "kue-http"
+include "kue-example"
+
