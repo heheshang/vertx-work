@@ -14,11 +14,11 @@ configure(allprojects) { project ->
         compile("io.vertx:vertx-hazelcast:${vertxVersion}")
         compile("io.vertx:vertx-lang-ruby:${vertxVersion}")
 
-        compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+       /* compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
         compile group: 'org.slf4j', name:'slf4j-api', version: '1.7.2'
         compile group: 'ch.qos.logback', name:'logback-classic', version: '1.0.9'
         compile group: 'ch.qos.logback', name:'logback-core', version: '1.0.9'
-        compileOnly 'org.projectlombok:lombok:1.18.4'
+        compileOnly 'org.projectlombok:lombok:1.18.4'*/
 
         testCompile("io.vertx:vertx-unit:${vertxVersion}")
         testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -58,6 +58,9 @@ project("kue-core") {
                 "-AoutputDirectory=${project.projectDir}/src/main"
         ]
     }
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
     compileJava {
         targetCompatibility = 1.8
         sourceCompatibility = 1.8
@@ -88,7 +91,10 @@ project("kue-example") {
         from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
         manifest {
             attributes 'Main-Class': 'io.vertx.core.Launcher'
-            attributes 'Main-Verticle': 'io.vertx.blueprint.kue.example.LearningVertxVerticle'
+            attributes 'Main-Verticle': 'com.vertx.example.DelayedEmailVerticle'
+//            attributes 'Main-Verticle': 'com.vertx.example.LearningVertxVerticle'
+//            attributes 'Main-Verticle': 'com.vertx.example.ManyJobsProcessingVerticle'
+//            attributes 'Main-Verticle': 'com.vertx.example.VideoProcessVerticle'
         }
     }
 }

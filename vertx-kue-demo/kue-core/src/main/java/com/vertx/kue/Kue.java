@@ -36,6 +36,12 @@ public class Kue {
 
     private final RedisClient client;
 
+    /**
+     * 第一点，我们通过createProxy方法来创建一个JobService的服务代理；
+     * 第二点，之前提到过，我们需要在这里初始化Job类中的静态成员变量。
+     * @param vertx
+     * @param config
+     */
     public Kue(Vertx vertx, JsonObject config) {
 
         this.vertx = vertx;
@@ -195,7 +201,9 @@ public class Kue {
 
     /**
      * Get job from backend by id.
-     *
+     * JobService是基于回调的，这是服务代理组件所要求的。为了让Vert.x Kue更加响应式，
+     * 使用起来更加方便，我们在Kue类中以基于Future的异步模式封装了JobService中的所有异步方法。
+     * 这很简单，比如这个方法：
      * @param id job id
      * @return async result
      */
@@ -421,6 +429,7 @@ public class Kue {
     }
 
     /**
+     *
      * Set up timers for checking job promotion and active job ttl.
      */
     private void setupTimers() {
@@ -430,6 +439,8 @@ public class Kue {
     }
 
     /**
+     * Vert.x Kue支持延时任务，因此我们需要在任务延时时间到达时将任务“提升”至工作队列中等待处理。
+     * 这个工作是在checkJobPromotion方法中实现的
      * Check job promotion.
      * Promote delayed jobs, checking every `ms`.
      */
@@ -438,6 +449,12 @@ public class Kue {
         int limit = config.getInteger("job.promotion.limit", 1000);
         // need a mechanism to stop the circuit timer
         vertx.setPeriodic(timeout, l -> {
+            /**
+             * zrangebyscore的结果是一个JsonArray，里面包含着所有等待提升任务的zid。
+             * 获得结果后我们就将每个zid转换为id，然后分别获取对应的任务实体，
+             * 最后对每个任务调用inactive方法来将任务状态设为INACTIVE (5)。
+             * 如果任务成功提升至工作队列，我们就发送promotion事件 (6)
+             */
             client.zrangebyscore(RedisHelper.getKey("jobs:DELAYED"), String.valueOf(0), String.valueOf(System.currentTimeMillis()),
                     new RangeLimitOptions(new JsonObject().put("offset", 0).put("count", limit)), r -> {
                         if (r.succeeded()) {

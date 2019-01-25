@@ -51,6 +51,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling create_proxy(#{vertx},#{address})"
     end
     #  Get the certain from backend by id.
+    #   获取任务的方法非常简单。直接利用hgetall命令从Redis中取出对应的任务即可
     # @param [Fixnum] id job id
     # @yield async result handler
     # @return [self]
@@ -62,6 +63,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling get_job(#{id})"
     end
     #  Remove a job by id.
+    #   我们可以将此方法看作是getJob和Job#remove两个方法的组合
     # @param [Fixnum] id job id
     # @yield async result handler
     # @return [self]
@@ -73,6 +75,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling remove_job(#{id})"
     end
     #  Judge whether a job with certain id exists.
+    #   使用exists命令判断对应id的任务是否存在
     # @param [Fixnum] id job id
     # @yield async result handler
     # @return [self]
@@ -84,6 +87,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling exists_job(#{id})"
     end
     #  Get job log by id.
+    #  使用lrange命令从vertx_kue:job:{id}:log列表中取出日志。
     # @param [Fixnum] id job id
     # @yield async result handler
     # @return [self]
@@ -95,6 +99,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling get_job_log(#{id})"
     end
     #  Get a list of job in certain state in range (from, to) with order.
+    #   指定状态，对应的key为vertx_kue:jobs:{state}。
     # @param [String] state expected job state
     # @param [Fixnum] from from
     # @param [Fixnum] to to
@@ -109,6 +114,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling job_range_by_state(#{state},#{from},#{to},#{order})"
     end
     #  Get a list of job in certain state and type in range (from, to) with order.
+    #   指定状态和类型，对应的key为vertx_kue:jobs:{type}:{state}。
     # @param [String] type expected job type
     # @param [String] state expected job state
     # @param [Fixnum] from from
@@ -124,6 +130,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling job_range_by_type(#{type},#{state},#{from},#{to},#{order})"
     end
     #  Get a list of job in range (from, to) with order.
+    #  对应的key为vertx_kue:jobs。
     # @param [Fixnum] from from
     # @param [Fixnum] to to
     # @param [String] order range order
@@ -137,6 +144,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling job_range(#{from},#{to},#{order})"
     end
     #  Get cardinality by job type and state.
+    #  利用zcard命令获取某一指定状态和类型下任务的数量。
     # @param [String] type job type
     # @param [:INACTIVE,:ACTIVE,:COMPLETE,:FAILED,:DELAYED] state job state
     # @yield async result handler
@@ -149,6 +157,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling card_by_type(#{type},#{state})"
     end
     #  Get cardinality by job state.
+    # 利用zcard命令获取某一指定状态下任务的数量。
     # @param [:INACTIVE,:ACTIVE,:COMPLETE,:FAILED,:DELAYED] state job state
     # @yield async result handler
     # @return [self]
@@ -215,6 +224,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling delayed_count(#{type})"
     end
     #  Get the job types present.
+    #  利用smembers命令获取vertx_kue:job:types集合中存储的所有的任务类型。
     # @yield async result handler
     # @return [self]
     def get_all_types
@@ -225,6 +235,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling get_all_types()"
     end
     #  Return job ids with the given .
+    #  使用zrange获取某一指定状态下所有任务的ID。
     # @param [:INACTIVE,:ACTIVE,:COMPLETE,:FAILED,:DELAYED] state job state
     # @yield async result handler
     # @return [self]
@@ -236,6 +247,7 @@ module VertxKueServiceModule
       raise ArgumentError, "Invalid arguments when calling get_ids_by_state(#{state})"
     end
     #  Get queue work time in milliseconds.
+    #  使用get命令从vertx_kue:stats:work-time中获取Vert.x Kue的工作时间。
     # @yield async result handler
     # @return [self]
     def get_work_time

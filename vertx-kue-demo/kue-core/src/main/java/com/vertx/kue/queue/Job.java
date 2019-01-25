@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
+
 /**
  * Vert.x Kue
  * Job domain class.
@@ -47,47 +48,111 @@ public class Job {
 
     // job properties
 
+    /**
+     * 一个UUID序列，作为Event Bus的地址
+     */
     private final String address_id;
 
+    /**
+     * 任务的编号(id)
+     */
     private long id = -1;
 
+    /**
+     * zset操作对应的编号(zid)，保持先进先出顺序
+     */
     private String zid;
 
+    /**
+     * 任务的类型
+     */
     private String type;
 
+    /**
+     * 任务携带的数据，以 JsonObject 类型表示
+     */
     private JsonObject data;
 
+    /**
+     * 任务优先级，以 Priority 枚举类型表示。默认优先级为正常(NORMAL)
+     */
     private Priority priority = Priority.NORMAL;
 
+    /**
+     * 任务状态，以 JobState 枚举类型表示。默认状态为等待(INACTIVE)
+     */
     private JobState state = JobState.INACTIVE;
 
+    /**
+     * 任务的延迟时间，默认是 0
+     */
     private long delay = 0;
 
+    /**
+     * 任务尝试执行次数的最大阈值
+     */
     private int max_attempts = 1;
 
+    /**
+     * 代表任务完成时是否自动从后台移除
+     */
     private boolean removeOnComplete = false;
 
+    /**
+     * TTL(Time to live)
+     */
     private int ttl = 0;
 
+    /**
+     * 任务重试配置，以 JsonObject 类型表示
+     */
     private JsonObject backoff;
 
+    /**
+     * 任务已经尝试执行的次数
+     */
     private int attempts = 0;
 
+    /**
+     * 任务执行的进度
+     */
     private int progress = 0;
 
+    /**
+     * 任务执行的结果，以 JsonObject 类型表示
+     */
     private JsonObject result;
 
     // job metrics
+
+    /**
+     * 代表此任务创建的时间
+     */
     private long created_at;
 
+    /**
+     * 代表此任务从延时状态被提升至等待状态时的时间
+     */
     private long promote_at;
 
+    /**
+     * 代表任务更新的时间
+     */
     private long updated_at;
 
+    /**
+     * 代表任务失败的时间
+     */
     private long failed_at;
 
+    /**
+     * 代表任务开始的时间
+     */
     private long started_at;
 
+    /**
+     * 代表处理任务花费的时间，单位为毫秒(ms)
+     */
     private long duration;
 
     public Job() {
@@ -189,7 +254,8 @@ public class Job {
     public Future<Job> state(JobState newState) {
 
         Future<Job> future = Future.future();
-        RedisClient client = RedisHelper.client(vertx, new JsonObject()); // use a new client to keep transaction
+        // use a new client to keep transaction
+        RedisClient client = RedisHelper.client(vertx, new JsonObject());
         JobState oldState = this.state;
         logger.debug("Job::state(from: " + oldState + ", to:" + newState.name() + ")");
         client.transaction().multi(r0 -> {
@@ -201,8 +267,8 @@ public class Job {
                 client.transaction().hset(RedisHelper.getKey("job:" + this.id), "state", newState.name(), _failure())
                         .zadd(RedisHelper.getKey("jobs:" + newState.name()), this.priority.getValue(), this.zid, _failure())
                         .zadd(RedisHelper.getKey("jobs:" + this.type + ":" + newState.name()), this.priority.getValue(), this.zid, _failure());
-
-                switch (newState) { // dispatch different state
+                // dispatch different state
+                switch (newState) {
                     case ACTIVE:
                         client.transaction().zadd(RedisHelper.getKey("jobs:" + newState.name()),
                                 this.priority.getValue() < 0 ? this.priority.getValue() : -this.priority.getValue(),
@@ -376,13 +442,15 @@ public class Job {
     private Future<Job> reattempt() {
 
         if (this.backoff != null) {
-            long delay = this.getBackoffImpl().apply(attempts); // calc delay time
+            // calc delay time
+            long delay = this.getBackoffImpl().apply(attempts);
             return this.setDelay(delay)
                     .setPromote_at(System.currentTimeMillis() + delay)
                     .update()
                     .compose(Job::delayed);
         } else {
-            return this.inactive(); // only restart the job
+            // only restart the job
+            return this.inactive();
         }
     }
 

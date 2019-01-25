@@ -66,6 +66,7 @@ public class KueWorker extends AbstractVerticle {
 
     /**
      * Prepare job and start processing procedure.
+     * 准备要处理的任务并且开始处理任务的过程
      */
     private void prepareAndStart() {
 
@@ -158,7 +159,7 @@ public class KueWorker extends AbstractVerticle {
 
     /**
      * Redis zpop atomic primitive with transaction.
-     *
+     * zpop命令是一个原子操作，用于从有序集合中弹出最小score值的元素
      * @param key redis key
      * @return the async result of zpop
      */
@@ -172,7 +173,8 @@ public class KueWorker extends AbstractVerticle {
                 .exec(r -> {
                     if (r.succeeded()) {
                         JsonArray res = r.result();
-                        if (res.getJsonArray(0).size() == 0) // empty set
+                        // empty set
+                        if (res.getJsonArray(0).size() == 0)
                             future.fail(new IllegalStateException("Empty zpop set"));
                         else {
                             try {
@@ -191,7 +193,7 @@ public class KueWorker extends AbstractVerticle {
 
     /**
      * Get a job from Redis backend by priority.
-     *
+     * Redis中按照优先级顺序获取任务实体
      * @return async result of job
      */
     private Future<Optional<Job>> getJobFromBackend() {
@@ -217,6 +219,16 @@ public class KueWorker extends AbstractVerticle {
         return future;
     }
 
+    /**
+     * 任务处理有两种情况：完成和失败，因此我们先来看任务成功处理的情况。我们首先给任务的用时(duration)赋值 (2)，
+     * 并且如果任务产生了结果，也给结果(result)赋值 (3)。
+     * 然后我们调用job.complete方法将状态设置为COMPLETE (4)。
+     * 如果成功的话，我们就检查removeOnComplete标志位 (5) 并决定是否将任务从Redis中移除。
+     * 然后我们向Event Bus发送任务完成事件(complete)以及队列事件job_complete (6)。
+     * 现在这个任务的处理过程已经结束了，worker需要准备处理下一个任务了，因此最后我们调用prepareAndStart方法准备处理下一个Job。
+     * @param job
+     * @return
+     */
     private Handler<AsyncResult<JsonObject>> createDoneCallback(Job job) {
 
         return r0 -> {
@@ -225,6 +237,7 @@ public class KueWorker extends AbstractVerticle {
                 return;
             }
             if (r0.failed()) {
+                //任务处理过程中很可能会遇见各种各样的问题而失败。当任务处理失败时，我们调用KueWorker中的fail方法
                 this.fail(r0.cause());
                 return;
             }
@@ -259,7 +272,7 @@ public class KueWorker extends AbstractVerticle {
 
     /**
      * Emit job event.
-     *
+     * 执行
      * @param event event type
      * @param job   corresponding job
      * @param extra extra data

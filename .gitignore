@@ -22,5 +22,8 @@ vertx-demo/build
 vertx-demo/out
 vertx-kue-demo/build
 vertx-kue-demo/kue-core/build
+vertx-kue-demo/kue-core/out
 vertx-kue-demo/kue-example/build
+vertx-kue-demo/kue-example/out
 vertx-kue-demo/kue-http/build
+vertx-kue-demo/kue-http/out
