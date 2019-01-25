@@ -19,3 +19,9 @@ java -jar vertx-blueprint-kue-example.jar -cluster -ha -conf config.json
 }
 
 ```
+
+#多实例启动
+```jshelllanguage
+java -jar vertx-blueprint-kue-example.jar  -ha -instances 5
+java -jar vertx-blueprint-kue-example.jar  -ha -instances 5
+```
